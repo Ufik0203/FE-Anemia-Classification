@@ -35,9 +35,9 @@ export default function ResultPanel({ result, loading }: any) {
         </>
       )}
 
-      <h2 className="text-green-600 font-bold mb-2">Evaluasi Terbaik</h2>
+      {/* <h2 className="text-green-600 font-bold mb-2">Evaluasi Terbaik</h2> */}
 
-      <div className="grid grid-cols-4 text-center text-sm">
+      <div className="grid grid-cols-4 text-center text-sm font-bold">
         <div>
           <p className="text-red-500">Accuracy</p>
           <b>{metrics ? toPercent(metrics.accuracy) : "-"}</b>

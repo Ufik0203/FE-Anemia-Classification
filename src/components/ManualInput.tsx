@@ -1,5 +1,5 @@
 import { Button, Modal } from "@heroui/react";
-import { useState, type JSX } from "react";
+import { useRef, useState, type JSX } from "react";
 
 const features = [
   "WBC",
@@ -19,15 +19,83 @@ const features = [
 ];
 
 export default function ManualInput({ onSubmit }: any) {
-  const [form, setForm] = useState<Record<string, string>>({});
+  const [form, setForm] = useState<Record<string, string>>(
+    Object.fromEntries(features.map((f) => [f, "0.0"])),
+  );
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [isOpen, setIsOpen] = useState(false);
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart } = e.target;
+
     if (!/^\d*\.?\d*$/.test(value)) return;
 
-    setForm((prev) => ({ ...prev, [name]: value }));
+    let newValue = value;
+    let cursor = selectionStart ?? value.length;
+
+    const prevValue = form[name];
+
+    if (prevValue === "0.0" && value.length <= 4) {
+      newValue = value.replace(/^0\.0/, "");
+      cursor = newValue.length;
+    }
+
+    if (newValue === "") {
+      setForm((prev) => ({ ...prev, [name]: "" }));
+      return;
+    }
+
+    if (!newValue.includes(".")) {
+      newValue = newValue + ".0";
+    } else {
+      const prevValue = form[name];
+      const dotIndex = prevValue.indexOf(".");
+
+      const inputChar = (e.nativeEvent as InputEvent).data;
+
+      if (
+        dotIndex !== -1 &&
+        selectionStart !== null &&
+        (selectionStart === dotIndex + 2 || selectionStart === dotIndex + 3) &&
+        prevValue.endsWith(".0") &&
+        inputChar !== null 
+      ) {
+        const int = prevValue.slice(0, dotIndex);
+
+        newValue = int + "." + inputChar;
+
+        cursor = dotIndex + 2;
+      }
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+    requestAnimationFrame(() => {
+      const input = inputRefs.current[name];
+      if (input) {
+        input.setSelectionRange(cursor, cursor);
+      }
+    });
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    if (value === "") {
+      setForm((prev) => ({ ...prev, [name]: "0.0" }));
+      return;
+    }
+
+    const formatted = Number(value).toString();
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: formatted.includes(".") ? formatted : formatted + ".0",
+    }));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -46,7 +114,11 @@ export default function ManualInput({ onSubmit }: any) {
     if (!/^\d*\.?\d*$/.test(paste)) e.preventDefault();
   };
 
-  const handleReset = () => setForm({});
+  const handleReset = () => {
+    setForm(Object.fromEntries(features.map((f) => [f, "0.0"])));
+    setErrors({});
+    setIsOpen(false);
+  };
 
   const submitForm = (data: Record<string, string>) => {
     const numericForm = Object.fromEntries(
@@ -56,7 +128,7 @@ export default function ManualInput({ onSubmit }: any) {
   };
 
   const handleSubmit = () => {
-    const emptyFields = features.filter((f) => !form[f]);
+    const emptyFields = features.filter((f) => !form[f] || form[f] === "0.0");
 
     if (emptyFields.length > 0) {
       setIsOpen(true);
@@ -67,22 +139,21 @@ export default function ManualInput({ onSubmit }: any) {
   };
 
   const handleAccept = () => {
-    const emptyFields = features.filter((f) => !form[f]);
+    const emptyFields = features.filter((f) => !form[f] || form[f] === "0.0");
+
     const filledForm = { ...form };
 
     emptyFields.forEach((f) => {
-      filledForm[f] = String(defaultValues[f]);
+      filledForm[f] = Number(defaultValues[f]).toFixed(1);
     });
 
     setForm(filledForm);
     setErrors({});
     setIsOpen(false);
-
-    submitForm(filledForm);
   };
 
   const handleReject = () => {
-    const emptyFields = features.filter((f) => !form[f]);
+    const emptyFields = features.filter((f) => !form[f] || form[f] === "0.0");
 
     const newErrors: Record<string, boolean> = {};
     emptyFields.forEach((f) => (newErrors[f] = true));
@@ -153,10 +224,13 @@ export default function ManualInput({ onSubmit }: any) {
       <div className="relative">
         <div className="absolute inset-0 grid grid-cols-4 items-center px-3 pointer-events-none text-sm text-gray-500">
           <span className="font-medium text-gray-600">{f}</span>
-
-          <span className="col-span-2 text-end text-xs font-semibold">
-            Contoh: 7.8
-          </span>
+          {form[f] === "0.0" ? (
+            <span className="col-span-2 text-end text-xs font-semibold">
+              Contoh: 7.8
+            </span>
+          ) : (
+            <span className="col-span-2"></span>
+          )}
 
           <span className="text-center text-xs font-semibold">
             {getUnit(f)}
@@ -164,17 +238,21 @@ export default function ManualInput({ onSubmit }: any) {
         </div>
 
         <input
+          ref={(el) => {
+            inputRefs.current[f] = el;
+          }}
           name={f}
-          value={form[f] || ""}
+          value={form[f]}
           inputMode="decimal"
           onKeyDown={handleKeyDown}
           onChange={handleChange}
+          onBlur={handleBlur}
           onPaste={handlePaste}
           onFocus={() => setErrors((prev) => ({ ...prev, [f]: false }))}
           className={`w-full h-10 border p-2 pl-15 pr-24 rounded text-sm text-green-600
             ${errors[f] ? "border-red-500" : "border-gray-300"}
             focus:outline-green-500`}
-          maxLength={6}
+          maxLength={10}
         />
       </div>
 
