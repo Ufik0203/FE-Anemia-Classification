@@ -17,7 +17,7 @@ function App() {
           Masukkan parameter CBC atau upload file untuk prediksi anemia
         </p>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6">
           <ManualInput onSubmit={handlePredict} />
 
           <div className="space-y-4">

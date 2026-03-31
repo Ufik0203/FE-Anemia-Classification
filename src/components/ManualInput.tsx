@@ -20,7 +20,7 @@ const features = [
 
 export default function ManualInput({ onSubmit }: any) {
   const [form, setForm] = useState<Record<string, string>>(
-    Object.fromEntries(features.map((f) => [f, "0.0"])),
+    Object.fromEntries(features.map((f) => [f, ""])),
   );
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [isOpen, setIsOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function ManualInput({ onSubmit }: any) {
     const { name, value } = e.target;
 
     if (value === "") {
-      setForm((prev) => ({ ...prev, [name]: "0.0" }));
+      setForm((prev) => ({ ...prev, [name]: "" }));
       return;
     }
 
@@ -115,7 +115,7 @@ export default function ManualInput({ onSubmit }: any) {
   };
 
   const handleReset = () => {
-    setForm(Object.fromEntries(features.map((f) => [f, "0.0"])));
+    setForm(Object.fromEntries(features.map((f) => [f, ""])));
     setErrors({});
     setIsOpen(false);
   };
@@ -128,7 +128,7 @@ export default function ManualInput({ onSubmit }: any) {
   };
 
   const handleSubmit = () => {
-    const emptyFields = features.filter((f) => !form[f] || form[f] === "0.0");
+    const emptyFields = features.filter((f) => !form[f] || form[f] === "");
 
     if (emptyFields.length > 0) {
       setIsOpen(true);
@@ -222,14 +222,14 @@ export default function ManualInput({ onSubmit }: any) {
   const renderInput = (f: string) => (
     <div key={f} className="mb-3">
       <div className="relative">
-        <div className="absolute inset-0 grid grid-cols-4 items-center px-3 pointer-events-none text-sm text-gray-500">
+        <div className="absolute inset-0 grid grid-cols-2 sm:grid-cols-4 items-center px-3 pointer-events-none text-sm text-gray-500">
           <span className="font-medium text-gray-600">{f}</span>
-          {form[f] === "0.0" ? (
-            <span className="col-span-2 text-end text-xs font-semibold">
+          {form[f] === "" ? (
+            <span className="col-span-2 text-end text-xs font-semibold hidden sm:block">
               Contoh: 7.8
             </span>
           ) : (
-            <span className="col-span-2"></span>
+            <span className="col-span-2 hidden sm:flex"></span>
           )}
 
           <span className="text-center text-xs font-semibold">
@@ -243,13 +243,14 @@ export default function ManualInput({ onSubmit }: any) {
           }}
           name={f}
           value={form[f]}
+          placeholder="0.0"
           inputMode="decimal"
           onKeyDown={handleKeyDown}
           onChange={handleChange}
           onBlur={handleBlur}
           onPaste={handlePaste}
           onFocus={() => setErrors((prev) => ({ ...prev, [f]: false }))}
-          className={`w-full h-10 border p-2 pl-15 pr-24 rounded text-sm text-green-600
+          className={`w-full h-10 border p-2 pl-13 lg:pl-15 pr-17 lg:pr-24 rounded text-sm text-green-600
             ${errors[f] ? "border-red-500" : "border-gray-300"}
             focus:outline-green-500`}
           maxLength={10}
