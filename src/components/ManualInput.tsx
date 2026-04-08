@@ -250,7 +250,7 @@ export default function ManualInput({ onSubmit }: any) {
           onBlur={handleBlur}
           onPaste={handlePaste}
           onFocus={() => setErrors((prev) => ({ ...prev, [f]: false }))}
-          className={`w-full h-10 border p-2 pl-13 lg:pl-15 pr-17 lg:pr-24 rounded text-sm text-green-600
+          className={`w-full h-10 border p-2 pl-13 md:pl-20 lg:pl-15 pr-17 lg:pr-24 rounded text-sm text-green-600
             ${errors[f] ? "border-red-500" : "border-gray-300"}
             focus:outline-green-500`}
           maxLength={10}
