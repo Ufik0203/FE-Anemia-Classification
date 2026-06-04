@@ -1,6 +1,8 @@
 import axios from "axios";
-import type { BatchPredictionResponse, PredictionResponse } from "../types/prediction";
-
+import type {
+  BatchPredictionResponse,
+  PredictionResponse,
+} from "../types/prediction";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -12,20 +14,22 @@ export const predictSingle = async (
 };
 
 export const predictFile = async (
-  file: File,
+  data: any[],
 ): Promise<BatchPredictionResponse> => {
-  const formData = new FormData();
-  formData.append("file", file);
+  const res = await axios.post(`${API_URL}/predict-file`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-  const res = await axios.post(`${API_URL}/predict-file`, formData);
   return res.data;
 };
 
 export type MetricsResponse = {
   accuracy: number;
-  precision_macro: number;
-  recall_macro: number;
-  f1_macro: number;
+  precision: number;
+  recall: number;
+  f1_score: number;
 };
 
 export const getMetrics = async (): Promise<MetricsResponse> => {

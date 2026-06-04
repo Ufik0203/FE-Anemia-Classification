@@ -1,5 +1,5 @@
 import { Button, Modal } from "@heroui/react";
-import { useRef, useState, type JSX } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
 
 const features = [
   "WBC",
@@ -18,7 +18,11 @@ const features = [
   "PCT",
 ];
 
-export default function ManualInput({ onSubmit }: any) {
+export default function ManualInput({
+  onSubmit,
+  onResetAll,
+  resetSignal,
+}: any) {
   const [form, setForm] = useState<Record<string, string>>(
     Object.fromEntries(features.map((f) => [f, ""])),
   );
@@ -59,7 +63,7 @@ export default function ManualInput({ onSubmit }: any) {
         selectionStart !== null &&
         (selectionStart === dotIndex + 2 || selectionStart === dotIndex + 3) &&
         prevValue.endsWith(".0") &&
-        inputChar !== null 
+        inputChar !== null
       ) {
         const int = prevValue.slice(0, dotIndex);
 
@@ -112,12 +116,6 @@ export default function ManualInput({ onSubmit }: any) {
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const paste = e.clipboardData.getData("text");
     if (!/^\d*\.?\d*$/.test(paste)) e.preventDefault();
-  };
-
-  const handleReset = () => {
-    setForm(Object.fromEntries(features.map((f) => [f, ""])));
-    setErrors({});
-    setIsOpen(false);
   };
 
   const submitForm = (data: Record<string, string>) => {
@@ -219,6 +217,13 @@ export default function ManualInput({ onSubmit }: any) {
     PCT: 0.2,
   };
 
+  useEffect(() => {
+    setForm(Object.fromEntries(features.map((f) => [f, ""])));
+
+    setErrors({});
+    setIsOpen(false);
+  }, [resetSignal]);
+
   const renderInput = (f: string) => (
     <div key={f} className="mb-3">
       <div className="relative">
@@ -291,7 +296,7 @@ export default function ManualInput({ onSubmit }: any) {
         </Button>
 
         <Button
-          onClick={handleReset}
+          onClick={onResetAll}
           className="flex-1 bg-red-500 text-white py-2 rounded-sm"
         >
           Reset

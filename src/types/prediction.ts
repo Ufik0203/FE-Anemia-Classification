@@ -5,11 +5,13 @@ export type PredictionResponse = {
 };
 
 export type BatchPredictionItem = {
-  label: string;
+  row: number;
+  diagnosis: string;
   confidence: number;
   probabilities: Record<string, number>;
 };
 
 export type BatchPredictionResponse = {
+  total: number;
   results: BatchPredictionItem[];
 };
