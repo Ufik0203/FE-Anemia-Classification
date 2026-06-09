@@ -33,17 +33,17 @@ export default function ResultPanel({
             {result.label}
           </div>
 
-          <p className="mb-2">
+          {/* <p className="mb-2">
             Confidence: <b>{toPercent(result.confidence)}</b>
-          </p>
+          </p> */}
 
-          <div className="space-y-1 mb-4">
+          {/* <div className="space-y-1 mb-4">
             {Object.entries(result.probabilities).map(([key, value]: any) => (
               <div key={key} className="text-sm">
                 {key}: {toPercent(value)}
               </div>
             ))}
-          </div>
+          </div> */}
         </>
       )}
 
@@ -63,7 +63,7 @@ export default function ResultPanel({
                 <tr>
                   <th className="border px-2 py-1">No</th>
                   <th className="border px-2 py-1">Diagnosis</th>
-                  <th className="border px-2 py-1">Confidence</th>
+                  {/* <th className="border px-2 py-1">Confidence</th> */}
                 </tr>
               </thead>
 
@@ -74,9 +74,9 @@ export default function ResultPanel({
 
                     <td className="border px-2 py-1">{item.diagnosis}</td>
 
-                    <td className="border px-2 py-1">
+                    {/* <td className="border px-2 py-1">
                       {toPercent(item.confidence)}
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>
