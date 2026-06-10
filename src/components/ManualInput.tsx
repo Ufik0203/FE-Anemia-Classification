@@ -1,5 +1,6 @@
 import { Button, Modal } from "@heroui/react";
 import { useEffect, useRef, useState, type JSX } from "react";
+import { HiInformationCircle } from "react-icons/hi";
 
 const features = [
   "WBC",
@@ -309,10 +310,15 @@ export default function ManualInput({
             <div className="bg-white p-5 rounded-lg w-full max-w-md">
               <h2 className="text-lg font-semibold mb-2">Konfirmasi</h2>
 
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 mb-4 font-semibold">
                 Ada field kosong. Isi dengan nilai default?
               </p>
-
+              <div className="flex gap-1">
+                <HiInformationCircle />
+                <p className="text-xs mb-4 font-semibold">
+                  Setelah field diisi, tekan lagi tombol "Prediksi".
+                </p>
+              </div>
               <div className="flex justify-end gap-2">
                 <Button
                   onClick={handleReject}
