@@ -52,6 +52,9 @@ function App() {
             />
           </div>
         </div>
+        <p className="text-center text-gray-600 mb-8 pt-20 text-xs font-semibold">
+          Sistem ini hanya mengklasifikasikan lima jenis anemia: Normocytic Normochromic Anemia, Normocytic Hypochromic Anemia, Iron Deficiency Anemia, Other Microcytic Anemia, dan Macrocytic Anemia. Sistem tidak mendeteksi kondisi sehat (non-anemia). Hasil prediksi harus divalidasi oleh tenaga medis yang kompeten.
+        </p>
       </div>
     </div>
   );
