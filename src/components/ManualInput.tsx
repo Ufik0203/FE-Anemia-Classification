@@ -210,10 +210,10 @@ export default function ManualInput({
     RBC: 5,
     HGB: 14,
     HCT: 40,
-    MCV: 90,
-    MCH: 30,
+    MCV: 73,
+    MCH: 28,
     MCHC: 33,
-    PLT: 250,
+    PLT: 181,
     PDW: 12,
     PCT: 0.2,
   };
