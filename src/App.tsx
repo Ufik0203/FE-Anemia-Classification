@@ -3,6 +3,7 @@ import FileUpload from "./components/FileUpload";
 import ManualInput from "./components/ManualInput";
 import ResultPanel from "./components/ResultPanel";
 import { usePrediction } from "./hook/usePrediction";
+import { Button } from "@heroui/react";
 
 function App() {
   const {
@@ -29,9 +30,20 @@ function App() {
           Anemia Detection Assistant
         </h1>
 
-        <p className="text-center text-gray-600 mb-8">
+        <p className="text-center text-gray-600">
           Masukkan parameter CBC atau upload file untuk prediksi anemia
         </p>
+        <div className="flex justify-center">
+          <Button className="min-w-100 min-h-10 bg-red-400 flex items-center justify-center my-8 rounded-lg font-bold text-white cursor-pointer">
+            <a
+              href="https://drive.google.com/file/d/1pJwZEpL0de4qlAqZCPSP9AEfJu29OTSo/view"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Template File CBC dapat di Download di Sini.
+            </a>
+          </Button>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           <ManualInput
@@ -53,7 +65,11 @@ function App() {
           </div>
         </div>
         <p className="text-center text-gray-600 mb-8 pt-20 text-xs font-semibold">
-          Sistem ini hanya mengklasifikasikan lima jenis anemia: Normocytic Normochromic Anemia, Normocytic Hypochromic Anemia, Iron Deficiency Anemia, Other Microcytic Anemia, dan Macrocytic Anemia. Sistem tidak mendeteksi kondisi sehat (non-anemia). Hasil prediksi harus divalidasi oleh tenaga medis yang kompeten.
+          Sistem ini hanya mengklasifikasikan lima jenis anemia: Normocytic
+          Normochromic Anemia, Normocytic Hypochromic Anemia, Iron Deficiency
+          Anemia, Other Microcytic Anemia, dan Macrocytic Anemia. Sistem tidak
+          mendeteksi kondisi sehat (non-anemia). Hasil prediksi harus divalidasi
+          oleh tenaga medis yang kompeten.
         </p>
       </div>
     </div>
