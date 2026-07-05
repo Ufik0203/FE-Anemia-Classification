@@ -103,7 +103,7 @@ export default function ResultPanel({
       )}
 
       <div className="bg-blue-50 p-2 rounded-lg shadow mt-6">
-        <p className="font-bold text-center">Metrik Evaluasi Latih</p>
+        <p className="font-bold text-center">Metrik Evaluasi Pelatihan</p>
         <div className="grid grid-cols-4 text-center text-sm font-bold mt-3">
           <div>
             <p className="text-red-500">Accuracy</p>
