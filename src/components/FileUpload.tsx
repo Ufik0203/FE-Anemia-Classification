@@ -19,6 +19,11 @@ const REQUIRED_COLUMNS = [
   "PCT",
 ];
 
+type MissingValue = {
+  row: number;
+  column: string;
+};
+
 export default function FileUpload({ onUpload, resetSignal }: any) {
   const [preview, setPreview] = useState<any[]>([]);
   const [error, setError] = useState("");
@@ -26,6 +31,22 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isMissingValue = (value: any) => {
+    if (value === null || value === undefined) {
+      return true;
+    }
+
+    if (typeof value === "string" && value.trim() === "") {
+      return true;
+    }
+
+    if (typeof value === "number" && Number.isNaN(value)) {
+      return true;
+    }
+
+    return false;
+  };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -48,26 +69,103 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
 
       const worksheet = workbook.Sheets[sheetName];
 
-      const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+      const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(
+        worksheet,
+        {
+          defval: null,
+          raw: true,
+        },
+      );
 
       if (!jsonData.length) {
         setError("File kosong");
         return;
       }
 
-      const uploadedColumns = Object.keys(jsonData[0]).map((c) => c.trim());
+      /*
+       * Normalisasi nama kolom.
+       *
+       * Contoh:
+       * " WBC " menjadi "WBC"
+       */
+      const normalizedData = jsonData.map((row) => {
+        const normalizedRow: Record<string, any> = {};
 
-      const missing = REQUIRED_COLUMNS.filter(
+        Object.entries(row).forEach(([key, value]) => {
+          normalizedRow[key.trim()] = value;
+        });
+
+        return normalizedRow;
+      });
+
+      /*
+       * Validasi nama feature / kolom
+       */
+      const uploadedColumns = Object.keys(normalizedData[0]);
+
+      const missingColumns = REQUIRED_COLUMNS.filter(
         (col) => !uploadedColumns.includes(col),
       );
 
-      if (missing.length > 0) {
-        setError(`Kolom tidak ditemukan: ${missing.join(", ")}`);
+      if (missingColumns.length > 0) {
+        setError(
+          `Kolom tidak ditemukan: ${missingColumns.join(", ")}`,
+        );
+
         return;
       }
 
-      const reordered = jsonData.map((row) => {
-        const orderedRow: any = {};
+      /*
+       * Validasi missing value
+       */
+      const missingValues: MissingValue[] = [];
+
+      normalizedData.forEach((row, rowIndex) => {
+        REQUIRED_COLUMNS.forEach((col) => {
+          if (isMissingValue(row[col])) {
+            missingValues.push({
+              /*
+               * +2 karena:
+               * row 1 = header Excel
+               * index array dimulai dari 0
+               */
+              row: rowIndex + 2,
+              column: col,
+            });
+          }
+        });
+      });
+
+      if (missingValues.length > 0) {
+        const maxDisplayedErrors = 10;
+
+        const missingDetails = missingValues
+          .slice(0, maxDisplayedErrors)
+          .map(
+            (item) =>
+              `${item.column} pada baris ${item.row}`,
+          )
+          .join(", ");
+
+        const remainingMissingValues =
+          missingValues.length > maxDisplayedErrors
+            ? ` dan ${
+                missingValues.length - maxDisplayedErrors
+              } missing value lainnya`
+            : "";
+
+        setError(
+          `Missing value terdeteksi pada ${missingDetails}${remainingMissingValues}. Lengkapi seluruh feature sebelum melakukan prediksi.`,
+        );
+
+        return;
+      }
+
+      /*
+       * Susun feature sesuai urutan model
+       */
+      const reordered = normalizedData.map((row) => {
+        const orderedRow: Record<string, any> = {};
 
         REQUIRED_COLUMNS.forEach((col) => {
           orderedRow[col] = row[col];
@@ -81,6 +179,7 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
       setSelectedFile(file);
     } catch (err) {
       console.error(err);
+
       setError("Gagal membaca file");
     }
   };
@@ -127,7 +226,10 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
           htmlFor="file-upload"
           className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-6 sm:p-10 cursor-pointer transition hover:border-blue-500 hover:bg-blue-50"
         >
-          <Upload size={36} className="text-blue-500 mb-3" />
+          <Upload
+            size={36}
+            className="text-blue-500 mb-3"
+          />
 
           <h3 className="font-semibold text-base sm:text-lg text-center">
             Upload File CSV atau Excel
@@ -172,12 +274,20 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
         </div>
       )}
 
-      {error && <p className="text-red-500 mt-4 font-medium">{error}</p>}
+      {error && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
+          <p className="text-red-600 font-medium text-sm">
+            {error}
+          </p>
+        </div>
+      )}
 
       {preview.length > 0 && (
         <div className="mt-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 mb-3">
-            <h3 className="font-bold">Data Berhasil Dimuat</h3>
+            <h3 className="font-bold">
+              Data Berhasil Dimuat
+            </h3>
 
             <span className="text-sm text-gray-500">
               Total Data: {uploadedData.length}
@@ -190,7 +300,10 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
                 <thead className="bg-gray-100">
                   <tr>
                     {REQUIRED_COLUMNS.map((col) => (
-                      <th key={col} className="border px-3 py-2 text-left">
+                      <th
+                        key={col}
+                        className="border px-3 py-2 text-left"
+                      >
                         {col}
                       </th>
                     ))}
@@ -199,9 +312,15 @@ export default function FileUpload({ onUpload, resetSignal }: any) {
 
                 <tbody>
                   {preview.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
+                    <tr
+                      key={idx}
+                      className="hover:bg-gray-50"
+                    >
                       {REQUIRED_COLUMNS.map((col) => (
-                        <td key={col} className="border px-3 py-2">
+                        <td
+                          key={col}
+                          className="border px-3 py-2"
+                        >
                           {row[col]}
                         </td>
                       ))}
